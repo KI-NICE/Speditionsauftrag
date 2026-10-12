@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speditionsauftrag | Kläger</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <img class="logo" id="logo" alt="Kläger Spraying Technology">
+    <div class="title-block">
+      <h1 data-i18n="pageTitle">Speditionsauftrag</h1>
+      <span class="form-no" data-i18n="formNoShort">Formular-Nr.: FO 15-01</span>
+    </div>
+    <div class="actions">
+      <div class="lang-switch" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button type="button" class="btn btn-ghost" id="btnCustomers" title="Kundenstamm / Customers">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 6v6c0 1.66 3.13 3 7 3s7-1.34 7-3V6M5 12v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span data-i18n="customers">Kundenstamm</span> <span class="badge" id="custBadge"></span>
+      </button>
+      <button type="button" class="btn btn-ghost" id="btnRefresh">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="refresh">Refresh</span>
+      </button>
+      <button type="button" class="btn btn-primary" id="btnExport">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="export">PDF exportieren</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="error-panel" id="errorPanel" hidden>
+    <strong data-i18n="errTitle">Export nicht möglich – bitte prüfen:</strong>
+    <ul id="errorList"></ul>
+  </div>
+
+  <div class="meta-row">
+    <span class="intro" data-i18n="intro">Zur Weiterbeförderung empfangen Sie nachstehende Güter.</span>
+    <span><span data-i18n="date">Datum</span>: <b id="today"></b></span>
+  </div>
+
+  <div class="grid2">
+    <div class="col">
+      <section class="card">
+        <h2 data-i18n="agent">Abholung durch</h2>
+        <label class="field">
+          <span class="sr" data-i18n="agent">Abholung durch</span>
+          <select data-field="agent" id="f-agent"></select>
+          <em class="msg"></em>
+        </label>
+      </section>
+      <section class="card">
+        <h2 data-i18n="ref">Referenz</h2>
+        <label class="field ref-field">
+          <span class="sr" data-i18n="ref">Referenz</span>
+          <input data-field="ref" id="f-ref" inputmode="numeric" maxlength="12" autocomplete="off" data-i18n-ph="refPh" placeholder="Auftragsnummer, 6–12 Ziffern">
+          <em class="msg"></em>
+        </label>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2 data-i18n="docs">Dokumente zum Speditionsauftrag</h2>
+      <div class="docs-grid" id="docsBody"></div>
+      <p class="hint" data-i18n="docHint">Mehrere Nummern mit Komma trennen, Bereiche mit Bindestrich (z. B. 150450-455). Liegt ein Dokument mehrfach bei: eine Nummer und die Menge eintragen.</p>
+      <em class="msg block" id="msg-docs"></em>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="split">
+        <div>
+          <h2 data-i18n="sender">Absender</h2>
+          <label class="field">
+            <span class="sr" data-i18n="sender">Absender</span>
+            <select data-field="sender" id="f-sender"></select>
+          </label>
+          <address id="senderPreview"></address>
+        </div>
+        <div>
+          <h2 data-i18n="times">Abholzeiten</h2>
+          <dl class="times">
+            <dt data-i18n="monThu">Mo.-Do.:</dt><dd><span data-i18n="t1"></span><br><span data-i18n="t2"></span></dd>
+            <dt data-i18n="fri">Fr.:</dt><dd data-i18n="t3"></dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="dest-head">
+        <h2 data-i18n="dest">Empfangsadresse</h2>
+        <label class="cust-field">
+          <span class="sr" data-i18n="custNo">Kundennummer</span>
+          <span class="cust-wrap"><b aria-hidden="true">#</b><input data-field="custNo" id="f-custNo" maxlength="20" autocomplete="off" data-i18n-ph="custNoPh" placeholder="Kundennummer + Enter"></span>
+        </label>
+      </div>
+      <em class="cust-status" id="custStatus"></em>
+      <div class="stack">
+        <label class="field"><span data-i18n="d0">Firma *</span><input data-field="dest0" id="f-dest0" maxlength="60" autocomplete="off"><em class="msg"></em></label>
+        <label class="field"><span data-i18n="d1">Zusatz</span><input data-field="dest1" id="f-dest1" maxlength="60" autocomplete="off"></label>
+        <label class="field"><span data-i18n="d2">Straße und Hausnummer *</span><input data-field="dest2" id="f-dest2" maxlength="60" autocomplete="off"><em class="msg"></em></label>
+        <label class="field city-gap"><span data-i18n="d3">Land / PLZ / Ort *</span><input data-field="dest3" id="f-dest3" maxlength="60" autocomplete="off" data-i18n-ph="d3Ph" placeholder="z. B. D 86473 Ziemetshausen"><em class="msg"></em></label>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 data-i18n="positions">Positionen</h2>
+      <span class="hint inline" data-i18n="posHint">Gewicht = Bruttogewicht je Position. Maße je Einheit, bei Kartons optional.</span>
+    </div>
+    <div class="table-scroll">
+      <table class="pos">
+        <thead>
+          <tr>
+            <th class="c-n">#</th>
+            <th class="c-qty" data-i18n="qty">Menge</th>
+            <th class="c-type" data-i18n="unitType">Art</th>
+            <th class="c-art" data-i18n="artNo">Art.-Nr.</th>
+            <th class="c-desc" data-i18n="desc1">Artikelbezeichnung 1</th>
+            <th class="c-desc" data-i18n="desc2">Artikelbezeichnung 2</th>
+            <th class="c-w" data-i18n="weightKg">Brutto (kg)</th>
+            <th class="c-d" data-i18n="dimL">L</th>
+            <th class="c-d" data-i18n="dimB">B</th>
+            <th class="c-d" data-i18n="dimH">H</th>
+            <th class="c-x"></th>
+          </tr>
+        </thead>
+        <tbody id="posBody"></tbody>
+      </table>
+    </div>
+    <div class="pos-foot">
+      <button type="button" class="btn btn-add" id="btnAddPos">+ <span data-i18n="addPos">Position</span> <span id="posCount"></span></button>
+      <em class="msg block" id="msg-pos"></em>
+    </div>
+    <div class="totals" id="totals"></div>
+  </section>
+
+  <section class="card">
+    <label class="field"><span class="h2like" data-i18n="freight">Frankatur</span><input data-field="freight" id="f-freight" maxlength="90" autocomplete="off"></label>
+  </section>
+
+  <section class="card">
+    <label class="field money"><span class="h2like" data-i18n="insured">Versicherungswert</span>
+      <span class="money-wrap"><input data-field="insured" id="f-insured" inputmode="decimal" maxlength="16" autocomplete="off" data-i18n-ph="insuredPh" placeholder="z. B. 7.106,40"><b>€</b></span>
+      <em class="msg"></em>
+    </label>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <label class="field"><span class="h2like" data-i18n="shipped">Beförderungsart</span><textarea data-field="shipped" id="f-shipped" rows="2" maxlength="120"></textarea></label>
+    </section>
+    <section class="card">
+      <label class="field"><span class="h2like" data-i18n="special">Besondere Vorschriften</span><textarea data-field="special" id="f-special" rows="2" maxlength="160"></textarea></label>
+    </section>
+  </div>
+
+  <p class="note" data-i18n="pickupNote">„Paletten getauscht“, Datum und Unterschrift füllt der Versand bei Abholung von Hand aus. Die Felder erscheinen leer im Export.</p>
+</main>
+
+<div class="modal-backdrop" id="confirmModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h3 id="confirmTitle" data-i18n="confirmTitle">Alle Eingaben löschen?</h3>
+    <p data-i18n="confirmText">Das Formular wird komplett geleert. Das lässt sich nicht rückgängig machen.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="confirmNo" data-i18n="cancel">Abbrechen</button>
+      <button type="button" class="btn btn-primary" id="confirmYes" data-i18n="confirmYes">Ja, löschen</button>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" id="newCustModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="newCustTitle">
+    <div id="newCustAsk">
+      <h3 id="newCustTitle" data-i18n="ncTitle">Kunde nicht gefunden</h3>
+      <p id="newCustText"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="ncNo" data-i18n="no">Nein</button>
+        <button type="button" class="btn btn-primary" id="ncYes" data-i18n="yes">Ja</button>
+      </div>
+    </div>
+    <form id="newCustForm" hidden novalidate>
+      <h3 id="ncFormTitle"></h3>
+      <div class="stack">
+        <label class="field"><span data-i18n="cName">Firma *</span><input id="nc-name" maxlength="60" autocomplete="off"><em class="msg"></em></label>
+        <label class="field"><span data-i18n="cExtra">Zusatz</span><input id="nc-extra" maxlength="60" autocomplete="off"></label>
+        <label class="field"><span data-i18n="cStreet">Straße und Hausnummer *</span><input id="nc-street" maxlength="60" autocomplete="off"><em class="msg"></em></label>
+        <div class="nc-city">
+          <label class="field"><span data-i18n="cCountry">Land</span><input id="nc-country" maxlength="4" autocomplete="off" value="D"></label>
+          <label class="field"><span data-i18n="cZip">PLZ *</span><input id="nc-zip" maxlength="10" autocomplete="off"><em class="msg"></em></label>
+          <label class="field"><span data-i18n="cCity">Ort *</span><input id="nc-city" maxlength="40" autocomplete="off"><em class="msg"></em></label>
+        </div>
+      </div>
+      <p class="hint" data-i18n="ncLocal">Der Kunde wird nur auf diesem PC ergänzt. Über „Kundenstamm → Herunterladen“ kannst Du die Liste mit dem Team teilen.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="ncCancel" data-i18n="cancel">Abbrechen</button>
+        <button type="submit" class="btn btn-primary" data-i18n="save">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="custModal" hidden>
+  <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="custTitle">
+    <h3 id="custTitle" data-i18n="customers">Stammdaten</h3>
+    <h4 class="sec-h" data-i18n="custSec">Kundenstamm</h4>
+    <div class="cust-info" id="custInfo"></div>
+    <p class="hint" data-i18n="cmHelp">Excel-Datei (.xlsx) oder CSV mit den Spalten Kundennr. | Firma | Zusatz | Straße | Land | PLZ | Ort. Die Daten bleiben nur auf diesem PC im Browser gespeichert und werden nicht übertragen.</p>
+    <div class="cust-actions">
+      <button type="button" class="btn btn-primary" id="cmUpload"><span data-i18n="cmUpload">Excel hochladen</span></button>
+      <button type="button" class="btn btn-ghost" id="cmDownload"><span data-i18n="cmDownload">Kundenstamm herunterladen</span></button>
+      <button type="button" class="btn btn-ghost" id="cmTemplate"><span data-i18n="cmTemplate">Leere Vorlage</span></button>
+    </div>
+    <div class="cust-err" id="custErr" hidden></div>
+    <div class="cust-added" id="custAdded"></div>
+    <button type="button" class="btn btn-link-danger" id="cmClear" data-i18n="cmClear">Alle Kundendaten von diesem PC löschen</button>
+
+    <h4 class="sec-h" data-i18n="artSec">Artikelstamm</h4>
+    <div class="cust-info" id="artInfo"></div>
+    <p class="hint" data-i18n="amHelp"></p>
+    <div class="cust-err" id="artErr" hidden></div>
+    <div class="cust-actions">
+      <button type="button" class="btn btn-primary" id="amUpload"><span data-i18n="amUpload">Artikelliste hochladen</span></button>
+      <button type="button" class="btn btn-ghost" id="amDownload"><span data-i18n="amDownload">Artikelstamm herunterladen</span></button>
+    </div>
+    <div class="cust-added" id="artAdded"></div>
+    <button type="button" class="btn btn-link-danger" id="amClear"></button>
+    <input type="file" id="amFile" accept=".xlsx,.csv,.txt" hidden>
+
+    <div class="modal-actions spread">
+      <span></span>
+      <button type="button" class="btn btn-ghost" id="cmClose" data-i18n="close">Schließen</button>
+    </div>
+    <input type="file" id="cmFile" accept=".xlsx,.csv,.txt" hidden>
+  </div>
+</div>
+<div class="modal-backdrop" id="newArtModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="newArtTitle">
+    <div id="newArtAsk">
+      <h3 id="newArtTitle" data-i18n="naTitle">Artikel nicht gefunden</h3>
+      <p id="newArtText"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="naNo" data-i18n="no">Nein</button>
+        <button type="button" class="btn btn-primary" id="naYes" data-i18n="yes">Ja</button>
+      </div>
+    </div>
+    <form id="newArtForm" hidden novalidate>
+      <h3 id="naFormTitle"></h3>
+      <div class="stack">
+        <label class="field"><span data-i18n="naDe1">Bezeichnung 1 DE</span><input id="na-de1" maxlength="40" autocomplete="off"><em class="msg"></em></label>
+        <label class="field"><span data-i18n="naDe2">Bezeichnung 2 DE</span><input id="na-de2" maxlength="40" autocomplete="off"></label>
+        <label class="field"><span data-i18n="naEn1">Bezeichnung 1 EN</span><input id="na-en1" maxlength="40" autocomplete="off"><em class="msg"></em></label>
+        <label class="field"><span data-i18n="naEn2">Bezeichnung 2 EN</span><input id="na-en2" maxlength="40" autocomplete="off"></label>
+      </div>
+      <p class="hint" data-i18n="naLocal"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="naCancel" data-i18n="cancel">Abbrechen</button>
+        <button type="submit" class="btn btn-primary" data-i18n="save">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="lib/jszip.min.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="assets.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
